@@ -422,7 +422,13 @@ Respond with ONLY a JSON object (no markdown fences):
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "version": "0.1.0"}
+    api_key = os.getenv("ANTHROPIC_API_KEY", "")
+    return {
+        "status": "ok",
+        "version": "0.1.0",
+        "anthropic_key_set": bool(api_key),
+        "anthropic_key_prefix": api_key[:10] + "..." if api_key else "NOT SET",
+    }
 
 
 @app.post("/api/estimate", response_model=CostBreakdown)
@@ -497,7 +503,7 @@ def optimize(req: OptimizeRequest):
             messages=[{"role": "user", "content": f"Optimize this BigQuery SQL query:\n\n{sql}"}],
         )
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"AI API error: {exc}")
+        raise HTTPException(status_code=500, detail=f"AI API error: {type(exc).__name__}: {exc}")
 
     input_tokens = response.usage.input_tokens
     output_tokens = response.usage.output_tokens
