@@ -5,8 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional
 
-from google.cloud import bigquery
-
 BYTES_PER_TIB = 2**40
 COST_PER_TIB = 6.25
 MIN_BYTES_BILLED = 10 * 1024 * 1024  # 10 MB per-query minimum
@@ -48,7 +46,7 @@ def bytes_to_cost(bytes_scanned: int) -> float:
 
 def estimate_bq_cost(
     sql: str,
-    client: bigquery.Client,
+    client,
     *,
     check_cache: bool = True,
 ) -> CostEstimate:
@@ -60,6 +58,8 @@ def estimate_bq_cost(
         check_cache: If True, also check whether the query is cache-eligible.
     """
     try:
+        from google.cloud import bigquery
+
         worst_case_job = client.query(
             sql,
             job_config=bigquery.QueryJobConfig(

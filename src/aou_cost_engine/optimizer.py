@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from typing import Optional
 
 import anthropic
-from google.cloud import bigquery
 
 from aou_cost_engine.core import CostEstimate, bytes_to_cost, estimate_bq_cost
 
@@ -82,7 +81,7 @@ def _estimate_api_cost(input_tokens: int, output_tokens: int) -> float:
 
 def optimize_query(
     sql: str,
-    bq_client: bigquery.Client,
+    bq_client,
     anthropic_client: anthropic.Anthropic | None = None,
     *,
     cost_threshold: float = DEFAULT_COST_THRESHOLD,
