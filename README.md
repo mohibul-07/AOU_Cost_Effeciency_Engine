@@ -2,6 +2,8 @@
 
 Cost estimation engine for the **All of Us Research Workbench** — know what your query costs *before* you run it.
 
+**[Live Dashboard](https://aou-cost-effeciency-engine.vercel.app/)** — Try it in your browser (no install needed)
+
 ## What it does
 
 - **Exact cost preview** via BigQuery dry run — no guessing, no scanning, no billing
@@ -58,6 +60,17 @@ The optimizer sends your SQL to Claude, gets a cheaper rewrite, and **dry-runs b
 %aou_cost_config --threshold 0.05 # Set cost threshold for AI (default $0.10)
 %aou_cost_config --auto-cap on    # Auto-inject byte caps
 ```
+
+## Web App
+
+A hosted web version is available at **[aou-cost-effeciency-engine.vercel.app](https://aou-cost-effeciency-engine.vercel.app/)** with:
+
+- Offline cost estimation using the static CDR catalog
+- AI-powered query optimization via Claude
+- Example queries for common AoU tables
+- Color-coded cost badges and guardrail suggestions
+
+No installation or BigQuery credentials required — paste any SQL and get an approximate cost estimate instantly.
 
 ## Offline / fallback mode
 
