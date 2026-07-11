@@ -495,15 +495,20 @@ def optimize(req: OptimizeRequest):
     original_estimate = estimate_from_sql(sql)
 
     try:
-        client = anthropic.Anthropic(api_key=api_key)
+        import httpx
+        http_client = httpx.Client(timeout=25.0)
+        client = anthropic.Anthropic(api_key=api_key, http_client=http_client)
         response = client.messages.create(
             model="claude-haiku-4-5-20251001",
             max_tokens=2048,
             system=OPTIMIZATION_PROMPT,
             messages=[{"role": "user", "content": f"Optimize this BigQuery SQL query:\n\n{sql}"}],
         )
+        http_client.close()
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"AI API error: {type(exc).__name__}: {exc}")
+        import traceback
+        tb = traceback.format_exc()
+        raise HTTPException(status_code=500, detail=f"AI API error: {type(exc).__name__}: {exc}\n{tb[-500:]}")
 
     input_tokens = response.usage.input_tokens
     output_tokens = response.usage.output_tokens
