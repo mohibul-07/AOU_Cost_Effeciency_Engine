@@ -421,13 +421,7 @@ Respond with ONLY a JSON object (no markdown fences):
 
 @app.get("/api/health")
 def health():
-    api_key = os.getenv("ANTHROPIC_API_KEY", "")
-    return {
-        "status": "ok",
-        "version": "0.1.0",
-        "anthropic_key_set": bool(api_key),
-        "anthropic_key_prefix": api_key[:10] + "..." if api_key else "NOT SET",
-    }
+    return {"status": "ok", "version": "0.1.0", "ai_enabled": bool((os.getenv("ANTHROPIC_API_KEY") or "").strip())}
 
 
 @app.post("/api/estimate", response_model=CostBreakdown)
@@ -487,7 +481,7 @@ def optimize(req: OptimizeRequest):
     if not sql:
         raise HTTPException(status_code=400, detail="Empty SQL")
 
-    api_key = os.getenv("ANTHROPIC_API_KEY")
+    api_key = (os.getenv("ANTHROPIC_API_KEY") or "").strip()
     if not api_key:
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured on server")
 
@@ -519,8 +513,7 @@ def optimize(req: OptimizeRequest):
     except HTTPException:
         raise
     except Exception as exc:
-        import traceback
-        raise HTTPException(status_code=500, detail=f"AI API error: {type(exc).__name__}: {exc}\n{traceback.format_exc()[-500:]}")
+        raise HTTPException(status_code=500, detail=f"AI API error: {type(exc).__name__}")
 
     api_cost = (input_tokens * 3.0 / 1_000_000) + (output_tokens * 15.0 / 1_000_000)
 
