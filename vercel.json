@@ -1,0 +1,14 @@
+{
+  "buildCommand": "cd web/frontend && npm install && npm run build",
+  "outputDirectory": "web/frontend/dist",
+  "framework": null,
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" }
+  ],
+  "functions": {
+    "api/index.py": {
+      "runtime": "@vercel/python@4.5.1",
+      "maxDuration": 30
+    }
+  }
+}

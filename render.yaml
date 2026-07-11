@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: aou-cost-engine-api
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: |
+      pip install -r web/backend/requirements.txt
+      pip install -e .
+    startCommand: cd web/backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.11"

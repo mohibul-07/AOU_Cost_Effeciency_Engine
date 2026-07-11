@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 
+const API_BASE = import.meta.env.VITE_API_URL || "";
+
 export default function TableCatalog() {
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/tables")
+    fetch(`${API_BASE}/api/tables`)
       .then((res) => res.json())
       .then(setTables)
       .catch(() => {})

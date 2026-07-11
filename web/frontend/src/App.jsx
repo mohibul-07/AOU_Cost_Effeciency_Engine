@@ -4,6 +4,8 @@ import CostBreakdown from "./components/CostBreakdown";
 import OptimizationPanel from "./components/OptimizationPanel";
 import TableCatalog from "./components/TableCatalog";
 
+const API_BASE = import.meta.env.VITE_API_URL || "";
+
 const EXAMPLE_QUERIES = [
   {
     label: "Simple person query",
@@ -38,7 +40,7 @@ export default function App() {
     setEstimate(null);
     setOptimization(null);
     try {
-      const res = await fetch("/api/estimate", {
+      const res = await fetch(`${API_BASE}/api/estimate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code }),
@@ -59,7 +61,7 @@ export default function App() {
     setOptimizing(true);
     setOptimization(null);
     try {
-      const res = await fetch("/api/optimize", {
+      const res = await fetch(`${API_BASE}/api/optimize`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sql: code }),
