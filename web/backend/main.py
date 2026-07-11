@@ -214,7 +214,7 @@ def optimize(req: OptimizeRequest):
     try:
         client = anthropic.Anthropic(api_key=api_key)
         response = client.messages.create(
-            model="claude-sonnet-4-20250514",
+            model="claude-haiku-4-5-20251001",
             max_tokens=2048,
             system=OPTIMIZATION_PROMPT,
             messages=[
@@ -232,8 +232,9 @@ def optimize(req: OptimizeRequest):
     api_cost = (input_tokens * 3.0 / 1_000_000) + (output_tokens * 15.0 / 1_000_000)
 
     raw_text = response.content[0].text.strip()
-    raw_text = re.sub(r"^```(?:json)?\s*", "", raw_text)
-    raw_text = re.sub(r"\s*```$", "", raw_text)
+    json_match = re.search(r"\{.*\}", raw_text, re.DOTALL)
+    if json_match:
+        raw_text = json_match.group(0)
 
     try:
         result = json.loads(raw_text)
@@ -277,11 +278,11 @@ def optimize(req: OptimizeRequest):
         savings_bytes=savings_bytes,
         savings_pct=round(savings_pct, 1),
         savings_usd=round(original_estimate.cost_usd - optimized_estimate.cost_usd, 6),
-        explanation=result.get("explanation", ""),
-        confidence=result.get("confidence", "medium"),
+        explanation=result.get("explanation") or "",
+        confidence=result.get("confidence") or "medium",
         semantically_equivalent=result.get("semantically_equivalent", True),
-        semantic_notes=result.get("semantic_notes", ""),
-        strategies_applied=result.get("strategies_applied", []),
+        semantic_notes=result.get("semantic_notes") or "",
+        strategies_applied=result.get("strategies_applied") or [],
         api_cost_usd=round(api_cost, 4),
     )
 

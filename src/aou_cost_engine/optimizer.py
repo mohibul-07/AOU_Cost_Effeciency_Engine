@@ -42,7 +42,7 @@ Respond with ONLY a JSON object (no markdown fences):
 """
 
 DEFAULT_COST_THRESHOLD = 0.10
-MODEL = "claude-sonnet-4-20250514"
+MODEL = "claude-haiku-4-5-20251001"
 
 
 @dataclass
@@ -150,8 +150,9 @@ def optimize_query(
     api_cost = _estimate_api_cost(input_tokens, output_tokens)
 
     raw_text = response.content[0].text.strip()
-    raw_text = re.sub(r"^```(?:json)?\s*", "", raw_text)
-    raw_text = re.sub(r"\s*```$", "", raw_text)
+    json_match = re.search(r"\{.*\}", raw_text, re.DOTALL)
+    if json_match:
+        raw_text = json_match.group(0)
 
     try:
         result = json.loads(raw_text)
