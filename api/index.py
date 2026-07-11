@@ -12,7 +12,6 @@ import re
 from enum import Enum
 from typing import Optional
 
-import anthropic
 import sqlglot
 from sqlglot import exp
 from fastapi import FastAPI, HTTPException
@@ -496,25 +495,35 @@ def optimize(req: OptimizeRequest):
 
     try:
         import httpx
-        http_client = httpx.Client(timeout=25.0)
-        client = anthropic.Anthropic(api_key=api_key, http_client=http_client)
-        response = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=2048,
-            system=OPTIMIZATION_PROMPT,
-            messages=[{"role": "user", "content": f"Optimize this BigQuery SQL query:\n\n{sql}"}],
-        )
-        http_client.close()
+        with httpx.Client(timeout=25.0) as http_client:
+            api_response = http_client.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={
+                    "x-api-key": api_key,
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json",
+                },
+                json={
+                    "model": "claude-haiku-4-5-20251001",
+                    "max_tokens": 2048,
+                    "system": OPTIMIZATION_PROMPT,
+                    "messages": [{"role": "user", "content": f"Optimize this BigQuery SQL query:\n\n{sql}"}],
+                },
+            )
+        if api_response.status_code != 200:
+            raise HTTPException(status_code=500, detail=f"Anthropic API {api_response.status_code}: {api_response.text[:300]}")
+        response_data = api_response.json()
+        raw_text = response_data["content"][0]["text"].strip()
+        input_tokens = response_data["usage"]["input_tokens"]
+        output_tokens = response_data["usage"]["output_tokens"]
+    except HTTPException:
+        raise
     except Exception as exc:
         import traceback
-        tb = traceback.format_exc()
-        raise HTTPException(status_code=500, detail=f"AI API error: {type(exc).__name__}: {exc}\n{tb[-500:]}")
+        raise HTTPException(status_code=500, detail=f"AI API error: {type(exc).__name__}: {exc}\n{traceback.format_exc()[-500:]}")
 
-    input_tokens = response.usage.input_tokens
-    output_tokens = response.usage.output_tokens
     api_cost = (input_tokens * 3.0 / 1_000_000) + (output_tokens * 15.0 / 1_000_000)
 
-    raw_text = response.content[0].text.strip()
     json_match = re.search(r"\{.*\}", raw_text, re.DOTALL)
     if json_match:
         raw_text = json_match.group(0)
