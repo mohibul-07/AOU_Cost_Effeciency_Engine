@@ -8,7 +8,8 @@
   "functions": {
     "api/index.py": {
       "runtime": "@vercel/python@4.5.1",
-      "maxDuration": 30
+      "maxDuration": 30,
+      "includeFiles": "src/**,web/backend/**"
     }
   }
 }
